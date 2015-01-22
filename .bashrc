@@ -92,16 +92,6 @@ NC="\e[m"               # Color Reset
 
 ALERT=${BWhite}${On_Red} # Bold White on red background
 
-function parse_git_dirty {
-  [[ $(git status 2> /dev/null | tail -n1) != "nothing to commit (working directory clean)" ]] && echo "*"
-}
-function parse_git_branch {
-  git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/[\1$(parse_git_dirty)]/"
-}
-function parse_git_stash_list {
-  git stash list --no-color 2>/dev/null | wc -l | sed s/0//
-}
-
 PS1='$(git branch &>/dev/null;\
 # in a git repo
 if [ $? -eq 0 ]; then \
@@ -180,8 +170,8 @@ fi
 MANSECT=2:3:1:4:5:6:7:8:9
 
 # "aliases"
-alias e='emacsclient -t'
-alias ec='emacsclient -c'
+alias e=emacs
+alias et='/usr/bin/env emacs -nw -q --no-splash'
 alias g=git
 alias ll='ls -l'
 alias la='ls -A'
@@ -197,20 +187,29 @@ alias gdb='gdb -n -x ~/.gdbinit'
 alias mosml='rlwrap mosml'
 alias sml='rlwrap sml'
 alias strings='strings -a'
-alias nasm='nasm -I $HOME/pwnies/tools/pwn/include/nasm/'
 alias hexdump='hexdump -Cv'
 function python () {
-  if [[ "$1" == "doit.py" ]] ; then
-    command python "$@" LOG_FILE=doit.log
-  else
-    command python "$@"
-  fi
+    if [[ "$1" == "doit.py" ]] ; then
+        command python "$@" LOG_FILE=doit.log
+    else
+        command python "$@"
+    fi
 }
-alias emacsnw='/usr/bin/emacs -nw'
 function emacs () {
-  (/usr/bin/emacs -D $@ </dev/null >/dev/null 2>/dev/null &)
+    (/usr/bin/env emacs --no-splash $@ </dev/null >/dev/null 2>/dev/null &)
 }
-alias doit='emacs doit.py'
+function doit () {
+    if [ ! -f doit.py ] ; then
+        cat > doit.py <<EOF
+#!/usr/bin/env python2
+from pwn import *
+context(arch = 'i386')
+
+EOF
+        chmod +x doit.py
+    fi
+    emacs doit.py +3
+}
 function odl () { objdump -dMintel "$1" | less; }
 function oDl () { objdump -DMintel "$1" | less; }
 function hdl () {
@@ -229,68 +228,93 @@ function RM () {
     shred -vu "$1"
   fi
 }
+
 function promptyn () {
-  if [ $# -eq 2 ] ; then
-    if [ $2 -eq 1 ] ; then
-      p="[Y/n]"
+    if [ $# -eq 2 ] ; then
+        if [ $2 -eq 1 ] ; then
+            p="[Y/n]"
+        else
+            p="[y/N]"
+        fi
     else
-      p="[y/N]"
+        p="[y/n]"
     fi
-  else
-    p="[y/n]"
-  fi
-  while true; do
-    read -p "$1 $p " yn
-    if [ "x$yn" == "xy" ] || \
-       [ "x$yn" == "xyes" ] || \
-       [ "x$yn" == "xY" ] || \
-       [ "x$yn" == "xYes" ] || \
-       [ "x$yn" == "xYES" ] || \
-       [[ "x$yn" == "x" && $# -eq 2 && $2 -eq 1 ]] ; then
-      return 1;
-    fi
-    if [ "x$yn" == "xn" ] || \
-       [ "x$yn" == "xno" ] || \
-       [ "x$yn" == "xN" ] || \
-       [ "x$yn" == "xNo" ] || \
-       [ "x$yn" == "xNO" ] || \
-       [[ "x$yn" == "x" && $# -eq 2 && $2 -eq 0 ]] ; then
-      return 0;
-    fi
-    echo "Please answer yes or no"
-  done
-}
-function addpkg () {
-  added=0
-  pkgs=$(history 10 | while read line ; do
-    echo "$line" | sed -n "s/.*apt-get.*install\([-\.\_:0-9a-zA-Z ]*\).*/\1/p" | tr ' ' '\n' | \
-    while read pkg ; do
-      [ "x$pkg" == "x" ] && continue
-      grep -q "^$pkg$" ~/config/packagelist
-      if [ $? -ne 0 ] ; then
-        echo $pkg
-      fi
+    while true; do
+        read -p "$1 $p " yn
+        if [ "x$yn" == "xy" ] || \
+            [ "x$yn" == "xyes" ] || \
+            [ "x$yn" == "xY" ] || \
+            [ "x$yn" == "xYes" ] || \
+            [ "x$yn" == "xYES" ] || \
+            [[ "x$yn" == "x" && $# -eq 2 && $2 -eq 1 ]] ; then
+            return 1;
+        fi
+        if [ "x$yn" == "xn" ] || \
+            [ "x$yn" == "xno" ] || \
+            [ "x$yn" == "xN" ] || \
+            [ "x$yn" == "xNo" ] || \
+            [ "x$yn" == "xNO" ] || \
+            [[ "x$yn" == "x" && $# -eq 2 && $2 -eq 0 ]] ; then
+            return 0;
+        fi
+        echo "Please answer yes or no"
     done
-  done | sort -u)
-  for pkg in $pkgs; do
-    promptyn "Add '$pkg' to package list?" 1
-    if [ $? -eq 1 ] ; then
-      added=$(($added + 1))
-      echo "$pkg" >> ~/config/packagelist
-    fi
-  done
-  echo -n "Added $added package"
-  if [ $added -ne 1 ] ; then
-    echo -n "s"
-  fi
-  echo
-  if [ $added -gt 0 ] ; then
-    (
-      cd ~/config
-      ./packagelist.sh
-    )
-  fi
 }
+
+# XXX: speed this up
+function addpkg () {
+    PACKAGES=~/.packages
+    PACKAGES_IGNORE=~/.packages.ignore
+    [ ! -f "${PACKAGES}" ]        && touch "${PACKAGES}"
+    [ ! -f "${PACKAGES_IGNORE}" ] && touch "${PACKAGES_IGNORE}"
+    added=0
+    ignored=0
+    pkgs=$(history | while read line ; do
+            [[ "${line}" =~ "apt-get" ]] || continue
+            echo "${line}" | sed -n "s/.*apt-get.*install\([-\.\_:0-9a-zA-Z ]*\).*/\1/p" | tr ' ' '\n' | \
+            while read pkg ; do
+                [ "x$pkg" == "x" ] && continue
+                echo "${pkg}"
+            done
+        done | sort -u)
+    for pkg in $pkgs; do
+        grep -q "^${pkg}$" "${PACKAGES}" && continue
+        grep -q "^${pkg}$" "${PACKAGES_IGNORE}" && continue
+        promptyn "Add '$pkg' to package list?" 1
+        if [ $? -eq 1 ] ; then
+            added=$(($added + 1))
+            echo "$pkg" >> "${PACKAGES}"
+        else
+            promptyn "Add '$pkg' to ignore list?" 1
+            if [ $? -eq 1 ] ; then
+                ignored=$(($ignored + 1))
+                echo "$pkg" >> "${PACKAGES_IGNORE}"
+            fi
+        fi
+    done
+    if [ $added -gt 0 ] ; then
+        echo -n "Added $added package"
+        if [ $added -ne 1 ] ; then
+            echo -n "s"
+        fi
+        echo
+        sort "${PACKAGES}" --output "${PACKAGES}"
+    fi
+    if [ $ignored -gt 0 ] ; then
+        echo -n "Ignored $ignored package"
+        if [ $added -ne 1 ] ; then
+            echo -n "s"
+        fi
+        echo
+        sort "${PACKAGES_IGNORE}" --output "${PACKAGES_IGNORE}"
+    fi
+    if [[ $added -gt 0 || $ignored -gt 0 ]] ; then
+        vcsh packages add "${PACKAGES}" "${PACKAGES_IGNORE}"
+        vcsh packages commit -m "added ${added}, ignored ${ignored}"
+        vcsh packages push
+    fi
+}
+
 m > /dev/null
 
 # autojump
@@ -299,7 +323,6 @@ source /usr/share/autojump/autojump.bash
 # path
 PATH=$HOME/.ghc/bin:$PATH
 PATH=$HOME/.cabal/bin:$PATH
-PATH=$HOME/projects/pwntools/pwnlib/commandline:$PATH
 PATH=/opt/ida-6.6:$PATH
 PATH=/opt/tor-browser_en-US:$PATH
 PATH=/opt/firmware-mod-kit:$PATH
@@ -307,7 +330,6 @@ PATH=/opt/binwalk/src/bin:$PATH
 PATH=$HOME/bin:$PATH
 PATH=/sbin/:$PATH
 PATH=/usr/sbin/:$PATH
-export PYTHONPATH=$HOME/projects/pwntools/
 
 # colors
 export TERM=xterm-256color
