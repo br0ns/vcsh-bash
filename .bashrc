@@ -114,7 +114,8 @@ else \
 fi)'
 
 # vcsh dirty?
-PS1="$PS1"'$([ "$HOME" == "`pwd`" ] && echo -e "\[${ALERT}\]!\[${NC}\]")'
+PS1="$PS1"'$([ "$HOME" == "`pwd`" ] && vcsh status | grep -q " " && \
+echo -e "\[${ALERT}\]!\[${NC}\]")'
 
 # this doesn't seem to work on my new debian install -- leaving it here for when
 # i have time to fix it
@@ -169,9 +170,6 @@ fi
 if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
-
-# proper man section order for a brogrammer
-export MANSECT=2:3:1:4:5:6:7:8:9
 
 # "aliases"
 alias e=emacs
