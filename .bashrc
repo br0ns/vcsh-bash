@@ -92,6 +92,7 @@ NC="\e[m"               # Color Reset
 
 ALERT=${BWhite}${On_Red} # Bold White on red background
 
+# git info
 PS1='$(git branch &>/dev/null;\
 # in a git repo
 if [ $? -eq 0 ]; then \
@@ -111,6 +112,9 @@ if [ $? -eq 0 ]; then \
 else \
   echo ""; \
 fi)'
+
+# vcsh dirty?
+PS1="$PS1"'$([ "$HOME" == "`pwd`" ] && echo -e "\[${ALERT}\]!\[${NC}\]")'
 
 # this doesn't seem to work on my new debian install -- leaving it here for when
 # i have time to fix it
@@ -167,16 +171,16 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
 fi
 
 # proper man section order for a brogrammer
-MANSECT=2:3:1:4:5:6:7:8:9
+export MANSECT=2:3:1:4:5:6:7:8:9
 
 # "aliases"
 alias e=emacs
 alias et='/usr/bin/env emacs -nw -q --no-splash'
 alias g=git
-alias ll='ls -l'
-alias la='ls -A'
-alias l='ls -CF'
-alias lla='ls -lA'
+alias l='ls -hCF --group-directories-first'
+alias ll='l -l'
+alias la='l -A'
+alias lla='l -lA'
 alias mkdir='mkdir -pv'
 function mkdircd () { mkdir -pv "$@" && eval cd "\"\$$#\""; }
 alias ..='cd ..'
@@ -229,107 +233,9 @@ function RM () {
   fi
 }
 
-function promptyn () {
-    if [ $# -eq 2 ] ; then
-        if [ $2 -eq 1 ] ; then
-            p="[Y/n]"
-        else
-            p="[y/N]"
-        fi
-    else
-        p="[y/n]"
-    fi
-    while true; do
-        read -p "$1 $p " yn
-        if [ "x$yn" == "xy" ] || \
-            [ "x$yn" == "xyes" ] || \
-            [ "x$yn" == "xY" ] || \
-            [ "x$yn" == "xYes" ] || \
-            [ "x$yn" == "xYES" ] || \
-            [[ "x$yn" == "x" && $# -eq 2 && $2 -eq 1 ]] ; then
-            return 1;
-        fi
-        if [ "x$yn" == "xn" ] || \
-            [ "x$yn" == "xno" ] || \
-            [ "x$yn" == "xN" ] || \
-            [ "x$yn" == "xNo" ] || \
-            [ "x$yn" == "xNO" ] || \
-            [[ "x$yn" == "x" && $# -eq 2 && $2 -eq 0 ]] ; then
-            return 0;
-        fi
-        echo "Please answer yes or no"
-    done
-}
-
-# XXX: speed this up
-function addpkg () {
-    PACKAGES=~/.packages
-    PACKAGES_IGNORE=~/.packages.ignore
-    [ ! -f "${PACKAGES}" ]        && touch "${PACKAGES}"
-    [ ! -f "${PACKAGES_IGNORE}" ] && touch "${PACKAGES_IGNORE}"
-    added=0
-    ignored=0
-    pkgs=$(history | while read line ; do
-            [[ "${line}" =~ "apt-get" ]] || continue
-            echo "${line}" | sed -n "s/.*apt-get.*install\([-\.\_:0-9a-zA-Z ]*\).*/\1/p" | tr ' ' '\n' | \
-            while read pkg ; do
-                [ "x$pkg" == "x" ] && continue
-                echo "${pkg}"
-            done
-        done | sort -u)
-    for pkg in $pkgs; do
-        grep -q "^${pkg}$" "${PACKAGES}" && continue
-        grep -q "^${pkg}$" "${PACKAGES_IGNORE}" && continue
-        promptyn "Add '$pkg' to package list?" 1
-        if [ $? -eq 1 ] ; then
-            added=$(($added + 1))
-            echo "$pkg" >> "${PACKAGES}"
-        else
-            promptyn "Add '$pkg' to ignore list?" 1
-            if [ $? -eq 1 ] ; then
-                ignored=$(($ignored + 1))
-                echo "$pkg" >> "${PACKAGES_IGNORE}"
-            fi
-        fi
-    done
-    if [ $added -gt 0 ] ; then
-        echo -n "Added $added package"
-        if [ $added -ne 1 ] ; then
-            echo -n "s"
-        fi
-        echo
-        sort "${PACKAGES}" --output "${PACKAGES}"
-    fi
-    if [ $ignored -gt 0 ] ; then
-        echo -n "Ignored $ignored package"
-        if [ $added -ne 1 ] ; then
-            echo -n "s"
-        fi
-        echo
-        sort "${PACKAGES_IGNORE}" --output "${PACKAGES_IGNORE}"
-    fi
-    if [[ $added -gt 0 || $ignored -gt 0 ]] ; then
-        vcsh packages add "${PACKAGES}" "${PACKAGES_IGNORE}"
-        vcsh packages commit -m "added ${added}, ignored ${ignored}"
-        vcsh packages push
-    fi
-}
+. ~/.apt-pkg/add-pkg.sh
 
 m > /dev/null
 
 # autojump
-source /usr/share/autojump/autojump.bash
-
-# path
-PATH=$HOME/.ghc/bin:$PATH
-PATH=$HOME/.cabal/bin:$PATH
-PATH=/opt/ida-6.6:$PATH
-PATH=/opt/tor-browser_en-US:$PATH
-PATH=/opt/firmware-mod-kit:$PATH
-PATH=/opt/binwalk/src/bin:$PATH
-PATH=$HOME/bin:$PATH
-PATH=/sbin/:$PATH
-PATH=/usr/sbin/:$PATH
-
-# colors
-export TERM=xterm-256color
+. /usr/share/autojump/autojump.bash
