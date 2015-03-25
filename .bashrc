@@ -3,9 +3,11 @@
 #  https://gist.github.com/31631
 #  http://mediadoneright.com/content/ultimate-git-ps1-bash-prompt
 
-
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
+
+# them colors
+export TERM=xterm-256color
 
 # history
 HISTCONTROL=ignoreboth
@@ -20,42 +22,8 @@ shopt -s checkwinsize
 shopt -u mailwarn
 unset MAILCHECK
 
-# set DISPLAY
-function get_xserver ()
-{
-    case $TERM in
-        xterm )
-            XSERVER=$(who am i | awk '{print $NF}' | tr -d ')''(' )
-            # Ane-Pieter Wieringa suggests the following alternative:
-            #  I_AM=$(who am i)
-            #  SERVER=${I_AM#*(}
-            #  SERVER=${SERVER%*)}
-            XSERVER=${XSERVER%%:*}
-            ;;
-            aterm | rxvt)
-            # Find some code that works here. ...
-            ;;
-    esac
-}
-
-if [ -z ${DISPLAY:=""} ]; then
-    get_xserver
-    if [[ -z ${XSERVER}  || ${XSERVER} == $(hostname) ||
-       ${XSERVER} == "unix" ]]; then
-          DISPLAY=":0.0"          # Display on local host.
-    else
-       DISPLAY=${XSERVER}:0.0     # Display on remote host.
-    fi
-fi
-export DISPLAY
-
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
-
-# set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
-fi
 
 # colors
 # Normal Colors
@@ -117,37 +85,13 @@ fi)'
 PS1="$PS1"'$([ "$HOME" == "`pwd`" ] && vcsh status | grep -q " " && \
 echo -e "\[${ALERT}\]!\[${NC}\]")'
 
-# this doesn't seem to work on my new debian install -- leaving it here for when
-# i have time to fix it
-# # Test user type:
-# if [[ ${USER} == ${LOGNAME} ]]; then
-#     # Test connection type:
-#     if [ -n "${SSH_CONNECTION}" ]; then
-#         # Connected on remote machine, via ssh (good).
-#         PS1="${PS1}\[${Green}\]\h\[${NC}\] "
-#     elif [[ "${DISPLAY%%:0*}" != "" ]]; then
-#         # Connected on remote machine, not via ssh (bad).
-#         PS1="${PS1}\[${ALERT}\]\h\[${NC}\] "
-#     fi
-#     PS1="${PS1}\[${BBlue}\]\w\[${NC}\]"
-# else
-#     # Im someone else, so always print host
-#     PS1="${PS1}\[${Blue}\]\h\[${NC}\] "
-#     if [[ ${USER} == "root" ]]; then
-#         # User is root
-#         PS1="${PS1}\[${BRed}\]\w\[${NC}\]"
-#     else
-#         PS1="${PS1}\[${BYellow}\]\w\[${NC}\]"
-#     fi
-# fi
-
 if [[ ${USER} == "root" ]]; then
-   PS1="${PS1}\[${Yellow}\]\h\[${NC}\]:\[${ALERT}\]\w\[${NC}\]"
+    PS1="${PS1}\[${Yellow}\]\h\[${NC}\]:\[${ALERT}\]\w\[${NC}\]"
 else
-   if [ -n "${SSH_CONNECTION}" ]; then
-      PS1="${PS1}\[${Yellow}\]\h\[${NC}\]:"
-   fi
-   PS1="${PS1}\[${BBlue}\]\w\[${NC}\]"
+    if [ -n "${SSH_CONNECTION}" ]; then
+        PS1="${PS1}\[${Yellow}\]\h\[${NC}\]:"
+    fi
+    PS1="${PS1}\[${BBlue}\]\w\[${NC}\]"
 fi
 
 PS1="${PS1}> "
@@ -156,9 +100,6 @@ PS1="${PS1}> "
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
     alias ls='ls --color=auto'
-    # alias dir='dir --color=auto'
-    # alias vdir='vdir --color=auto'
-
     alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
     alias egrep='egrep --color=auto'
@@ -171,7 +112,7 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
-# "aliases"
+# aliases
 alias e=emacs
 alias et='/usr/bin/env emacs -nw -q --no-splash'
 alias g=git
@@ -180,26 +121,67 @@ alias ll='l -l'
 alias la='l -A'
 alias lla='l -lA'
 alias mkdir='mkdir -pv'
-function mkdircd () { mkdir -pv "$@" && eval cd "\"\$$#\""; }
-alias ..='cd ..'
-alias ,='pushd'
-alias m='pushd .'
-alias n='popd'
 alias gdb='gdb -n -x ~/.gdbinit'
-alias mosml='rlwrap mosml'
-alias sml='rlwrap sml'
 alias strings='strings -a'
 alias hexdump='hexdump -Cv'
-function python () {
+
+alias .1='cd ..'
+alias .2='cd ../..'
+alias .3='cd ../../..'
+alias .4='cd ../../../..'
+alias .5='cd ../../../../..'
+alias ..=.1
+alias ...=.2
+alias ....=.3
+
+alias nc='rlwrap nc'
+alias mosml='rlwrap mosml'
+alias sml='rlwrap sml'
+
+# lightweight "bookmarks"
+# current directory is implicitly marked
+# r rotates marked directories
+alias r='pushd -1'
+# f swaps/flips directories at top of list
+alias s='pushd'
+# m marks current directory
+alias m='pushd .'
+# p unmarks/pops current directory
+alias p='popd'
+
+# $HOME is marked initially
+m > /dev/null
+
+# alias-like functions
+
+function mkdircd () {
+    mkdir -pv "$@" && eval cd "\"\$$#\"";
+}
+
+function pwnthon () {
     if [[ "$1" == "doit.py" ]] ; then
         command python "$@" LOG_FILE=doit.log
     else
         command python "$@"
     fi
 }
+
 function emacs () {
     (/usr/bin/env emacs --no-splash $@ </dev/null >/dev/null 2>/dev/null &)
 }
+
+function ida () {
+    if file "$1" | grep -q 64-bit ; then
+        (idaq64 "$1" &)
+    else
+        (idaq "$1" &)
+    fi
+}
+
+function mdv () {
+    chromium --app="file://$PWD/$@"
+}
+
 function doit () {
     if [ ! -f doit.py ] ; then
         cat > doit.py <<EOF
@@ -212,8 +194,18 @@ EOF
     fi
     emacs doit.py +3
 }
-function odl () { objdump -dMintel "$1" | less; }
-function oDl () { objdump -DMintel "$1" | less; }
+
+# <o>bjectdump -<d> | <l>ess
+function odl () {
+    objdump -dMintel "$1" | less;
+}
+
+# <o>bjectdump -<D> | <l>ess
+function oDl () {
+    objdump -DMintel "$1" | less;
+}
+
+# <h>ex<d>ump | <l>ess
 function hdl () {
   if [ $# -eq 0 ] ; then
     phd --color always | less -R
@@ -221,7 +213,12 @@ function hdl () {
     phd --color always "$1" | less -R
   fi
 }
-function rel () { readelf -a "$1" | less; }
+
+# <r>ead<e>lf | <l>ess
+function rel () {
+    readelf -a "$1" | less;
+}
+
 function RM () {
   if [ -d "$1" ]; then
     find "$1" -type f -exec shred -vu "{}" \;
@@ -231,9 +228,8 @@ function RM () {
   fi
 }
 
-. ~/.apt-pkg/add-pkg.sh
-
-m > /dev/null
+# package management
+. ~/.pkg/pkg.sh
 
 # autojump
 . /usr/share/autojump/autojump.bash
