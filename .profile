@@ -6,6 +6,8 @@ export PAGER=less
 export EDITOR=emacs
 export BROWSER=chromium
 
+export GTK_IM_MODULE=xim
+
 # Update path
 export PATH=\
 /usr/local/bin:\
