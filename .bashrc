@@ -228,8 +228,5 @@ function RM () {
   fi
 }
 
-# package management
-. ~/.pkg/pkg.sh
-
 # autojump
 . /usr/share/autojump/autojump.bash
