@@ -179,7 +179,7 @@ function ida () {
 }
 
 function mdv () {
-    chromium --app="file://$PWD/$@"
+    chromium --app="file://$(realpath "$@")"
 }
 
 function doit () {
