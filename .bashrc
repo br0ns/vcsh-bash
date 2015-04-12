@@ -114,14 +114,13 @@ fi
 
 # aliases
 alias e=emacs
-alias et='/usr/bin/env emacs -nw -q --no-splash'
+alias et='/usr/bin/env emacs -nw -q --no-splash --execute "(setq make-backup-files nil)" --execute "(menu-bar-mode -1)"'
 alias g=git
 alias l='ls -hCF --group-directories-first'
 alias ll='l -l'
 alias la='l -A'
 alias lla='l -lA'
 alias mkdir='mkdir -pv'
-alias gdb='gdb -n -x ~/.gdbinit'
 alias strings='strings -a'
 alias hexdump='hexdump -Cv'
 
