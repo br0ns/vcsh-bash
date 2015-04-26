@@ -6,6 +6,10 @@
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
+# I'm aware that this is not how it is usually done, but when I change my PATH I
+# like my shells to catch up immediately
+[ -f ~/.profile ] && . ~/.profile
+
 # them colors
 export TERM=xterm-256color
 
@@ -13,6 +17,14 @@ export TERM=xterm-256color
 HISTCONTROL=ignoreboth
 HISTFILESIZE=50000
 HISTSIZE=50000
+
+# proper man section order for a brogrammer
+export MANSECT=2:3:1:4:5:6:7:8:9
+
+# Set up common programs
+export PAGER=less
+export EDITOR=emacs
+export BROWSER=chromium
 
 # options
 shopt -s cdspell

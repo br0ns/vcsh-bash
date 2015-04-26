@@ -1,11 +1,4 @@
-# proper man section order for a brogrammer
-export MANSECT=2:3:1:4:5:6:7:8:9
-
-# Set up common programs
-export PAGER=less
-export EDITOR=emacs
-export BROWSER=chromium
-
+# Compose key doesn't work without this
 export GTK_IM_MODULE=xim
 
 # Update path
@@ -35,11 +28,3 @@ for d in /opt/*/bin ; do
         export PATH=$PATH:$d
     fi
 done
-
-# if running bash
-if [ -n "$BASH_VERSION" ]; then
-    # include .bashrc if it exists
-    if [ -f "$HOME/.bashrc" ]; then
-  . "$HOME/.bashrc"
-    fi
-fi
