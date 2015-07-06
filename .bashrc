@@ -218,11 +218,7 @@ function oDl () {
 
 # <h>ex<d>ump | <l>ess
 function hdl () {
-  if [ $# -eq 0 ] ; then
-    phd --color always | less -R
-  else
-    phd --color always "$1" | less -R
-  fi
+  phd --color always $@ | less -R
 }
 
 # <r>ead<e>lf | <l>ess
