@@ -226,6 +226,12 @@ function rel () {
     readelf -a "$1" | less;
 }
 
+# man and scroll to flag
+# borrowed from http://www.blaenkdenum.com/posts/dots#functions
+function manf() {
+    man -P "less -p \"^ +$2\"" $1
+}
+
 function RM () {
   if [ -d "$1" ]; then
     find "$1" -type f -exec shred -vu "{}" \;
