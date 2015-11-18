@@ -241,5 +241,21 @@ function RM () {
   fi
 }
 
+function onchange () {
+    TARGET="$1"
+    shift
+    inotifywait -mr \
+                --timefmt "%H:%M:%S" \
+                --format "%T %w %f" \
+                -e close_write \
+                $TARGET | \
+        while read TIME DIR FILE; do
+            CHANGED="${DIR}${FILE}"
+            echo "$TIME | $CHANGED"
+            eval "$@"
+        done
+}
+
+
 # autojump
 . /usr/share/autojump/autojump.bash
