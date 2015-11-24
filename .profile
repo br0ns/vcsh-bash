@@ -25,6 +25,6 @@ done
 
 for d in /opt/*/bin ; do
     if [ "$d" != "/opt/*/bin" ]; then
-        export PATH="$d:$PATH"
+        export PATH="$PATH:$d"
     fi
 done
