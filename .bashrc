@@ -29,8 +29,10 @@ export BROWSER=chromium
 # options
 shopt -s cdspell
 shopt -s globstar
+shopt -s extglob
 shopt -s histappend
 shopt -s checkwinsize
+shopt -s checkjobs
 shopt -u mailwarn
 unset MAILCHECK
 
