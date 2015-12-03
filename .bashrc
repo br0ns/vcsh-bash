@@ -128,7 +128,8 @@ fi
 
 # aliases
 alias e=emacs
-alias et='/usr/bin/env emacs -nw -q --no-splash --execute "(setq make-backup-files nil)" --execute "(menu-bar-mode -1)"'
+alias et='/usr/bin/env emacs -nw --no-splash'
+alias sue='sudo /usr/bin/env emacs -nw -Q'
 alias g=git
 alias l='ls -hCF --group-directories-first'
 alias ll='l -l'
