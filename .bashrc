@@ -138,6 +138,7 @@ alias lla='l -lA'
 alias mkdir='mkdir -pv'
 alias strings='strings -a'
 alias hexdump='hexdump -Cv'
+alias a='ag -W200'
 
 alias .1='cd ..'
 alias .2='cd ../..'
