@@ -260,6 +260,18 @@ function onchange () {
         done
 }
 
+# http://stackoverflow.com/questions/1527049/bash-join-elements-of-an-array
+join() {
+    local d=$1
+    shift
+    echo -n "$1"
+    shift
+    printf "%s" "${@/#/$d}"
+}
+
+f() {
+    eval "find . -iname \"*$(join '*" -or -iname "*' "$@")*\""
+}
 
 # autojump
 . /usr/share/autojump/autojump.bash
