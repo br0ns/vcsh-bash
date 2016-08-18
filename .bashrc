@@ -127,7 +127,8 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
 fi
 
 # aliases
-alias e=emacs
+alias e="echo -e"
+alias en="echo -en"
 alias et='/usr/bin/env emacs -nw --no-splash'
 alias sue='sudo /usr/bin/env emacs -nw --quick --eval "(setq make-backup-files nil)"'
 alias g=git
@@ -234,6 +235,10 @@ function rel () {
 # borrowed from http://www.blaenkdenum.com/posts/dots#functions
 function manf() {
     man -P "less -p \"^ +$2\"" $1
+}
+
+function mans() {
+    man -P "less -p \"^$2\"" $1
 }
 
 function RM () {
