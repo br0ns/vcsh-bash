@@ -22,7 +22,7 @@ HISTSIZE=50000
 export MANSECT=2:3:1:4:5:6:7:8:9
 
 # Set up common programs
-export PAGER=less
+export PAGER="less -j.2"
 export EDITOR=emacs
 export BROWSER=chromium
 
