@@ -241,6 +241,14 @@ function mans() {
     man -P "less -p \"^$2\"" $1
 }
 
+function randman() {
+    f=$((for i in `seq 1 8` ; do ls -1 /usr/share/man/man$i ; done) | \
+            shuf -n1)
+    m=${f%.*.*}
+    s=$(echo "$f" | rev | cut -d. -f2 | rev)
+    man "$s" "$m"
+}
+
 function RM () {
   if [ -d "$1" ]; then
     find "$1" -type f -exec shred -vu "{}" \;
