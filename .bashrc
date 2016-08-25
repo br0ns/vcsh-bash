@@ -140,6 +140,7 @@ alias mkdir='mkdir -pv'
 alias strings='strings -a'
 alias hexdump='hexdump -Cv'
 alias a='ag -W200'
+alias myip='curl wtfismyip.com/json ; echo'
 
 alias .1='cd ..'
 alias .2='cd ../..'
