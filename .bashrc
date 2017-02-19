@@ -22,9 +22,12 @@ HISTSIZE=50000
 export MANSECT=2:3:1:4:5:6:7:8:9
 
 # Set up common programs
-export PAGER="less -j.2"
+export PAGER=less
 export EDITOR=emacs
 export BROWSER=chromium
+
+# Configure less
+export LESS="-i -j.2 -R -F -X"
 
 # options
 shopt -s cdspell
@@ -35,9 +38,6 @@ shopt -s checkwinsize
 shopt -s checkjobs
 shopt -u mailwarn
 unset MAILCHECK
-
-# make less more friendly for non-text input files, see lesspipe(1)
-[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
 # colors
 # Normal Colors
@@ -137,9 +137,10 @@ alias ll='l -l'
 alias la='l -A'
 alias lla='l -lA'
 alias mkdir='mkdir -pv'
-alias strings='strings -a'
+alias strings='strings -a -tx'
 alias hexdump='hexdump -Cv'
 alias a='ag -W200'
+alias todo='a --color-match "" -o "(XXX|TODO):.*"'
 alias myip='curl wtfismyip.com/json ; echo'
 
 alias .1='cd ..'
