@@ -251,6 +251,23 @@ function randman() {
     man "$s" "$m"
 }
 
+# Based on http://unix.stackexchange.com/questions/14303/bash-cd-up-until-in-certain-folder/14311#14311
+# Jump to closest matching parent directory
+u () {
+    if [ -z "$1" ]; then
+        return
+    fi
+    local upto=$@
+    cd "${PWD/\/$upto\/*//$upto}"
+}
+# Auto-completion
+_u() {
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local d=${PWD//\//\ }
+    COMPREPLY=( $( compgen -W "$d" -- "$cur" ) )
+}
+complete -F _u u
+
 function RM () {
   if [ -d "$1" ]; then
     find "$1" -type f -exec shred -vu "{}" \;
