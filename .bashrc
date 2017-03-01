@@ -251,6 +251,28 @@ function randman() {
     man "$s" "$m"
 }
 
+# Spawn a browser which proxies through SSH
+proxychrome () {
+    PORT=9090
+    if [ $# -ne 1 ] ; then
+        echo "$FUNCNAME <host>"
+        return
+    fi
+    CMD="ssh -fND $PORT $1"
+    echo "$CMD"
+    $CMD
+    chromium --temp-profile --proxy-server="socks5://localhost:$PORT" 2>/dev/null
+    pkill -e -f "$CMD"
+}
+
+_proxychrome () {
+    local cur prev words cword
+    _init_completion || return
+    # local cur=${COMP_WORDS[COMP_CWORD]}
+    _known_hosts_real -a "$cur"
+}
+complete -F _proxychrome proxychrome
+
 # Based on http://unix.stackexchange.com/questions/14303/bash-cd-up-until-in-certain-folder/14311#14311
 # Jump to closest matching parent directory
 u () {
