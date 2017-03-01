@@ -152,9 +152,14 @@ alias ..=.1
 alias ...=.2
 alias ....=.3
 
-alias nc='rlwrap nc'
-alias mosml='rlwrap mosml'
-alias sml='rlwrap sml'
+rlwrap_progs=(
+    nc
+    mosml
+    sml
+)
+for prog in "${rlwrap_progs[@]}" ; do
+    alias nc${prog}='rlwrap ${prog}'
+done
 
 # lightweight "bookmarks"
 # current directory is implicitly marked
