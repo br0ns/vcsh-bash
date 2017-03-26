@@ -284,6 +284,7 @@ u () {
     if [ -z "$1" ]; then
         return
     fi
+    m
     local upto=$@
     cd "${PWD/\/$upto\/*//$upto}"
 }
