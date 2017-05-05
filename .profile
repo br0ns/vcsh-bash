@@ -21,6 +21,7 @@ for d in \
     "$HOME/bin" \
     "$HOME/.ghc/bin" \
     "$HOME/.cabal/bin" \
+    "$HOME/.cargo/bin" \
     ; do
     if [ -d "$d" ] ; then
         export PATH="$d:$PATH"
