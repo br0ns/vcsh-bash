@@ -335,3 +335,5 @@ f() {
 
 # autojump
 . /usr/share/autojump/autojump.bash
+alias ji='autojump --increase'
+alias jd='autojump --decrease'
