@@ -297,12 +297,14 @@ _u() {
 complete -F _u u
 
 function RM () {
-  if [ -d "$1" ]; then
-    find "$1" -type f -exec shred -vu "{}" \;
-    rm -rfv "$1"
-  else
-    shred -vu "$1"
-  fi
+    for x in "$@" ; do
+        if [ -d "$x" ]; then
+            find "$x" -type f -exec shred -vu "{}" \;
+            rm -rfv "$x"
+        else
+            shred -vu "$x"
+        fi
+    done
 }
 
 function onchange () {
@@ -337,3 +339,41 @@ f() {
 . /usr/share/autojump/autojump.bash
 alias ji='autojump --increase'
 alias jd='autojump --decrease'
+
+# Docker aliases
+# From: https://github.com/tcnksm/docker-alias
+alias dk='docker'
+alias dps='dk ps'
+alias dpa='dps -a'
+alias dim='dk images'
+alias dip='dk inspect --format "{{ .NetworkSettings.IPAddress }}"'
+alias dr='dk run'
+alias drd='dr -d'
+alias drit='dr -i -t'
+alias drm='dk rm $(dpa -q)'
+alias drmf='dk rm -f $(dpa -q)'
+alias drmi='dk rmi $(dim -q)'
+
+dex() {
+    if [ $# -lt 2 ] ; then
+        echo "$FUNCNAME <name> <command>"
+        return
+    fi
+    nameorid=$1
+    shift
+    id=$(dps -q -fid=$nameorid)
+    if [ -z $id ] ; then
+        id=$(dps -q -n1 -fname=$nameorid)
+    fi
+    dk exec -t -i $id $@
+}
+
+dbuild() {
+    if [ $# -lt 1 ] ; then
+        echo "$FUNCNAME <name> [<options>]"
+        return
+    fi
+    name="$1"
+    shift
+    dk build -t="$name" $@ .
+}
