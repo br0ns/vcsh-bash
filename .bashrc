@@ -136,6 +136,9 @@ alias l='ls -hCF --group-directories-first'
 alias ll='l -l'
 alias la='l -A'
 alias lla='l -lA'
+alias lR='l -R'
+alias lRa='lR -A'
+alias mv='mv -i'
 alias mkdir='mkdir -pv'
 alias strings='strings -a -tx'
 alias hexdump='hexdump -Cv'
@@ -177,9 +180,11 @@ m > /dev/null
 
 # alias-like functions
 
-function mkdircd () {
+function mkcd () {
     mkdir -pv "$@" && eval cd "\"\$$#\"";
 }
+
+alias mkdircd='mkcd'
 
 function pwnthon () {
     if [[ "$1" == "doit.py" ]] ; then
