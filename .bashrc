@@ -307,21 +307,6 @@ function RM () {
     done
 }
 
-function onchange () {
-    TARGET="$1"
-    shift
-    inotifywait -mr \
-                --timefmt "%H:%M:%S" \
-                --format "%T %w %f" \
-                -e close_write \
-                $TARGET | \
-        while read TIME DIR FILE; do
-            CHANGED="${DIR}${FILE}"
-            echo "$TIME | $CHANGED"
-            eval "$@"
-        done
-}
-
 # http://stackoverflow.com/questions/1527049/bash-join-elements-of-an-array
 join() {
     local d=$1
