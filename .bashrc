@@ -246,11 +246,7 @@ function rel () {
 # man and scroll to flag
 # borrowed from http://www.blaenkdenum.com/posts/dots#functions
 function manf() {
-    man -P "less -p \"^ +$2\"" $1
-}
-
-function mans() {
-    man -P "less -p \"^$2\"" $1
+    man -P "less -p \"^ +-$1\"" $2
 }
 
 function randman() {
