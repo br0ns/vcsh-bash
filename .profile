@@ -4,8 +4,15 @@ export GTK_IM_MODULE=xim
 # QGtkStyle needs this to detect the current theme
 export GTK2_RC_FILES="$HOME/.gtkrc-2.0"
 
+# Set default shell.  I still want my login shell to be bash since that is used
+# to run ~/.xsession
+export SHELL=/usr/bin/fish
+
+# Editor
+export EDITOR=emacs
+
 # Update path
-export PATH=\
+PATH=\
 /usr/local/bin:\
 /usr/bin:\
 /bin:\
@@ -15,21 +22,14 @@ export PATH=\
 /usr/local/games:\
 /usr/games
 
-for d in \
-    "/opt/ida-6.6" \
-    "/opt/pin" \
-    "$HOME/bin" \
-    "$HOME/.ghc/bin" \
-    "$HOME/.cabal/bin" \
-    "$HOME/.cargo/bin" \
-    ; do
-    if [ -d "$d" ] ; then
-        export PATH="$d:$PATH"
-    fi
-done
+addbins () {
+    while read -r -d $'\0' dir ; do
+        if [ -d "$dir/bin" ] ; then
+            PATH="$dir/bin:$PATH"
+        fi
+    done < <(find "$1" -maxdepth 1 -type d -print0)
+}
 
-for d in /opt/*/bin ; do
-    if [ "$d" != "/opt/*/bin" ]; then
-        export PATH="$PATH:$d"
-    fi
-done
+addbins "$HOME"
+addbins "/opt"
+export PATH

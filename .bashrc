@@ -97,7 +97,11 @@ fi)'
 
 # vcsh dirty?
 PS1="$PS1"'$([ "$HOME" == "`pwd`" ] && vcsh status | grep -q " " && \
-echo -e "\[${ALERT}\]!\[${NC}\]")'
+echo -e "[\[${ALERT}\]VCSH\[${NC}\]]")'
+
+# Warning if logged in on a TTY
+PS1="$PS1"'$(w | egrep -q " tty[0-9]+ " && \
+echo -e "[\[${ALERT}\]TTY\[${NC}\]]")'
 
 if [[ ${USER} == "root" ]]; then
     PS1="${PS1}\[${Yellow}\]\h\[${NC}\]:\[${ALERT}\]\w\[${NC}\]"
@@ -194,9 +198,9 @@ function pwnthon () {
     fi
 }
 
-function emacs () {
-    (/usr/bin/env emacs --no-splash $@ </dev/null >/dev/null 2>/dev/null &)
-}
+#function emacs () {
+#    (/usr/bin/env emacs --no-splash $@ </dev/null >/dev/null 2>/dev/null &)
+#}
 
 function ida () {
     if file "$1" | grep -q 64-bit ; then
